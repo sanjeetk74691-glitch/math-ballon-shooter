@@ -34,15 +34,26 @@ export interface Balloon {
   isPopping: boolean;
 }
 
+export interface Particle {
+  id: string;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  color: string;
+  life: number; // 0 to 1
+  size: number;
+}
+
 export interface LevelConfig {
   id: number;
   title: string;
   minBalloons: number;
   maxBalloons: number;
   speed: number;
-  operations: string[]; // ['+', '-', '*', '/']
+  operations: string[];
   range: [number, number];
-  timeLimit?: number; // In seconds
+  timeLimit?: number;
   description: string;
 }
 
