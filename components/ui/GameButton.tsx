@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { playSound } from '../../utils/soundManager';
+import { playSound } from '../../utils/soundManager.ts';
 
 interface GameButtonProps {
   onClick: () => void;

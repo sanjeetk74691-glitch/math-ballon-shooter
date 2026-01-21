@@ -1,11 +1,11 @@
 
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { GameState, UserStats, LevelConfig, Balloon, BalloonType } from './types';
-import { LEVELS, COLORS } from './constants';
-import { generateProblem } from './utils/mathHelper';
-import { playSound, setMuted, getMuted } from './utils/soundManager';
-import GameButton from './components/ui/GameButton';
-import BalloonComponent from './components/game/BalloonComponent';
+import { GameState, UserStats, LevelConfig, Balloon, BalloonType } from './types.ts';
+import { LEVELS, COLORS } from './constants.ts';
+import { generateProblem } from './utils/mathHelper.ts';
+import { playSound, setMuted, getMuted } from './utils/soundManager.ts';
+import GameButton from './components/ui/GameButton.tsx';
+import BalloonComponent from './components/game/BalloonComponent.tsx';
 
 const App: React.FC = () => {
   const [gameState, setGameState] = useState<GameState>(GameState.SPLASH);
@@ -25,7 +25,6 @@ const App: React.FC = () => {
   const [multiplier, setMultiplier] = useState(1);
   const [isFrozen, setIsFrozen] = useState(false);
 
-  // Modal States
   const [showSettings, setShowSettings] = useState(false);
   const [legalView, setLegalView] = useState<'privacy' | 'terms' | 'about' | null>(null);
   const [isAudioMuted, setIsAudioMuted] = useState(getMuted());
@@ -232,7 +231,6 @@ const App: React.FC = () => {
     playSound('click');
   };
 
-  // Legal Content Data
   const LegalContent = {
     privacy: {
       title: "Privacy Policy",
@@ -248,8 +246,6 @@ const App: React.FC = () => {
     }
   };
 
-  // --- RENDERING SCREENS ---
-
   if (gameState === GameState.SPLASH) {
     return (
       <div className="fixed inset-0 bg-gradient-to-br from-blue-500 to-indigo-700 flex flex-col items-center justify-center text-white p-6 text-center z-[500]">
@@ -259,7 +255,7 @@ const App: React.FC = () => {
         <h1 className="text-5xl font-game mb-4 tracking-wider drop-shadow-xl">MATH BALLOON</h1>
         <h2 className="text-2xl font-game text-yellow-300 drop-shadow-lg uppercase tracking-[0.3em]">Adventure</h2>
         <div className="mt-12 w-48 h-2 bg-white/20 rounded-full overflow-hidden">
-          <div className="h-full bg-yellow-400 animate-[loading_2s_ease-in-out_infinite]" style={{width: '80%'}}></div>
+          <div className="h-full bg-yellow-400 animate-loading w-full" style={{ width: '80%' }}></div>
         </div>
       </div>
     );
@@ -288,34 +284,27 @@ const App: React.FC = () => {
           </div>
         </div>
 
-        {/* Home Screen Modals */}
         {showSettings && (
           <div className="fixed inset-0 z-[200] flex items-center justify-center p-6">
             <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowSettings(false)} />
             <div className="relative bg-white rounded-[40px] w-full max-w-sm overflow-hidden shadow-2xl border-t-8 border-blue-400">
               <div className="p-8 text-center">
                 <h3 className="text-3xl font-game text-blue-600 mb-8 uppercase tracking-widest">Settings</h3>
-                
                 <div className="flex flex-col gap-6 mb-8">
                   <div className="flex items-center justify-between bg-blue-50 p-5 rounded-3xl">
                     <span className="font-bold text-blue-800 text-xl flex items-center gap-3">
                       {isAudioMuted ? '🔇' : '🔊'} SOUNDS
                     </span>
-                    <button 
-                      onClick={toggleMute}
-                      className={`w-16 h-8 rounded-full transition-colors relative ${isAudioMuted ? 'bg-gray-300' : 'bg-green-400'}`}
-                    >
+                    <button onClick={toggleMute} className={`w-16 h-8 rounded-full transition-colors relative ${isAudioMuted ? 'bg-gray-300' : 'bg-green-400'}`}>
                       <div className={`absolute top-1 w-6 h-6 bg-white rounded-full transition-all ${isAudioMuted ? 'left-1' : 'left-9'}`} />
                     </button>
                   </div>
-
                   <div className="grid grid-cols-1 gap-3">
                     <button onClick={() => setLegalView('privacy')} className="text-blue-500 font-bold hover:underline py-2">Privacy Policy</button>
                     <button onClick={() => setLegalView('terms')} className="text-blue-500 font-bold hover:underline py-2">Terms of Service</button>
                     <button onClick={() => setLegalView('about')} className="text-blue-500 font-bold hover:underline py-2">About App</button>
                   </div>
                 </div>
-
                 <GameButton onClick={() => setShowSettings(false)} variant="secondary" className="w-full">CLOSE</GameButton>
               </div>
             </div>
@@ -326,7 +315,7 @@ const App: React.FC = () => {
           <div className="fixed inset-0 z-[300] flex items-center justify-center p-6">
             <div className="absolute inset-0 bg-black/70 backdrop-blur-md" onClick={() => setLegalView(null)} />
             <div className="relative bg-white rounded-[40px] w-full max-w-sm h-[80vh] flex flex-col shadow-2xl overflow-hidden border-t-8 border-yellow-400">
-              <div className="p-8 flex-1 overflow-y-auto">
+              <div className="p-8 flex-1 overflow-y-auto text-left">
                 <h3 className="text-2xl font-game text-yellow-600 mb-6 uppercase">{LegalContent[legalView].title}</h3>
                 <p className="text-gray-600 leading-relaxed font-bold whitespace-pre-wrap">{LegalContent[legalView].body}</p>
                 <div className="h-8" />
@@ -344,9 +333,6 @@ const App: React.FC = () => {
       </div>
     );
   }
-
-  // Reuse logic for other states (Level Map, Playing, Complete, Game Over, Trophy)
-  // ... (Rest of existing state logic remains, ensure they use isAudioMuted logic)
 
   if (gameState === GameState.LEVEL_MAP) {
     return (
@@ -430,7 +416,6 @@ const App: React.FC = () => {
     );
   }
 
-  // Note: Level Complete, Game Over, and Final Trophy screens use similar logic with win/lose sounds triggered by the effect.
   if (gameState === GameState.LEVEL_COMPLETE) {
     return (
       <div className="fixed inset-0 bg-gradient-to-br from-green-500 to-emerald-600 flex flex-col items-center justify-center p-8 text-white z-[200]">
