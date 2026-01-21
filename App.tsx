@@ -7,6 +7,15 @@ import { playSound, setMuted, getMuted } from './utils/soundManager.ts';
 import GameButton from './components/ui/GameButton.tsx';
 import BalloonComponent from './components/game/BalloonComponent.tsx';
 
+// Mock Leaderboard Data
+const MOCK_RANKING = [
+  { name: "SuperPopper", score: 12450, rank: 1, avatar: "🦁" },
+  { name: "MathGenius", score: 11200, rank: 2, avatar: "🦊" },
+  { name: "BalloonKing", score: 9800, rank: 3, avatar: "🐯" },
+  { name: "QuickSolve", score: 8500, rank: 4, avatar: "🐼" },
+  { name: "StarCoder", score: 7200, rank: 5, avatar: "🐨" },
+];
+
 const App: React.FC = () => {
   const [gameState, setGameState] = useState<GameState>(GameState.SPLASH);
   const [loadingComplete, setLoadingComplete] = useState(false);
@@ -26,27 +35,28 @@ const App: React.FC = () => {
   const [multiplier, setMultiplier] = useState(1);
   const [isFrozen, setIsFrozen] = useState(false);
 
+  // New UI states for Rank and Legal
   const [showSettings, setShowSettings] = useState(false);
-  const [legalView, setLegalView] = useState<'privacy' | null>(null);
+  const [showRank, setShowRank] = useState(false);
+  const [legalView, setLegalView] = useState<'privacy' | 'terms' | null>(null);
   const [isAudioMuted, setIsAudioMuted] = useState(getMuted());
 
   const gameLoopRef = useRef<number>(null);
   const lastSpawnRef = useRef<number>(0);
   const skyRef = useRef<HTMLDivElement>(null);
 
-  // Splash timeout
   useEffect(() => {
     if (gameState === GameState.SPLASH) {
       const timer = setTimeout(() => {
         setLoadingComplete(true);
-      }, 2500);
+      }, 2000);
       return () => clearTimeout(timer);
     }
   }, [gameState]);
 
   const createExplosion = (x: number, y: number, color: string) => {
     const newParticles: Particle[] = [];
-    const count = 30; 
+    const count = 35; 
     const explosionColors = [color, '#ffffff', '#fbbf24', '#f472b6', '#4ade80', '#60a5fa'];
     
     for (let i = 0; i < count; i++) {
@@ -60,7 +70,7 @@ const App: React.FC = () => {
         vy: Math.sin(angle) * speed,
         color: explosionColors[Math.floor(Math.random() * explosionColors.length)],
         life: 1,
-        size: 4 + Math.random() * 10
+        size: 3 + Math.random() * 9
       });
     }
     setParticles(prev => [...prev, ...newParticles]);
@@ -102,9 +112,9 @@ const App: React.FC = () => {
           ...p,
           x: p.x + p.vx,
           y: p.y + p.vy,
-          vy: p.vy + 0.2, // Gravity
-          life: p.life - 0.03,
-          size: p.size * 0.96
+          vy: p.vy + 0.22, 
+          life: p.life - 0.035,
+          size: p.size * 0.95
         }))
         .filter(p => p.life > 0);
     });
@@ -257,30 +267,30 @@ const App: React.FC = () => {
   if (gameState === GameState.SPLASH) {
     return (
       <div className="fixed inset-0 bg-gradient-to-br from-blue-600 via-indigo-700 to-indigo-950 flex flex-col items-center justify-center text-white p-6 text-center z-[500] screen-fade-in">
-        <div className="absolute inset-0 opacity-20 pointer-events-none">
+        <div className="absolute inset-0 opacity-10 pointer-events-none">
           {[...Array(6)].map((_, i) => (
             <div key={i} className="absolute animate-float" style={{left: `${i * 15}%`, top: `${20 + (i * 10)}%`, fontSize: '40px'}}>🎈</div>
           ))}
         </div>
         
         <div className="relative mb-12">
-          <div className="w-56 h-56 bg-white/10 rounded-full flex items-center justify-center animate-float shadow-[0_0_100px_rgba(255,255,255,0.1)]">
-            <span className="text-[120px] drop-shadow-[0_0_20px_rgba(255,255,255,0.5)]">🎈</span>
+          <div className="w-56 h-56 bg-white/10 rounded-full flex items-center justify-center animate-float shadow-[0_0_80px_rgba(255,255,255,0.15)] backdrop-blur-sm border border-white/10">
+            <span className="text-[110px] drop-shadow-[0_0_20px_rgba(255,255,255,0.3)]">🎈</span>
           </div>
-          <div className="absolute -bottom-4 -right-4 w-20 h-20 bg-yellow-400 rounded-full flex items-center justify-center text-4xl shadow-lg border-4 border-white animate-bounce">
+          <div className="absolute -bottom-2 -right-2 w-16 h-16 bg-yellow-400 rounded-full flex items-center justify-center text-3xl shadow-lg border-4 border-white animate-bounce">
             ✨
           </div>
         </div>
         
-        <h1 className="text-7xl font-game mb-4 tracking-tighter drop-shadow-[0_10px_0_#1d4ed8] uppercase scale-110">Math Pop!</h1>
-        <p className="text-xl font-bold text-blue-200 mb-12 uppercase tracking-[0.2em] opacity-80">Educational Arcade</p>
+        <h1 className="text-6xl sm:text-7xl font-game mb-2 tracking-tighter text-outline uppercase scale-105">Math Pop!</h1>
+        <p className="text-lg font-bold text-blue-300 mb-12 uppercase tracking-[0.2em] opacity-80">Academy Adventure</p>
         
         {!loadingComplete ? (
-          <div className="w-64 h-4 bg-white/20 rounded-full overflow-hidden border-2 border-white/10">
-            <div className="h-full bg-yellow-400 animate-progress"></div>
+          <div className="w-64 h-3 bg-white/10 rounded-full overflow-hidden border border-white/10">
+            <div className="h-full bg-yellow-400 animate-progress shadow-[0_0_15px_rgba(251,191,36,0.6)]"></div>
           </div>
         ) : (
-          <GameButton onClick={handleStartGame} variant="secondary" className="py-7 px-12 text-3xl shadow-[0_12px_0_0_#d97706] rounded-[40px] animate-bounce">
+          <GameButton onClick={handleStartGame} variant="secondary" className="py-6 px-10 text-2xl shadow-[0_8px_0_0_#d97706] rounded-full animate-pulse">
             🚀 GET STARTED
           </GameButton>
         )}
@@ -290,80 +300,131 @@ const App: React.FC = () => {
 
   if (gameState === GameState.HOME) {
     return (
-      <div className="fixed inset-0 sky-bg flex flex-col items-center justify-around p-8 bg-[url('https://images.unsplash.com/photo-1513002749550-c59d786b8e6c?auto=format&fit=crop&w=800&q=80')] bg-cover bg-center screen-fade-in">
-        <div className="absolute inset-0 bg-blue-600/30 backdrop-blur-[2px]"></div>
+      <div className="fixed inset-0 sky-bg flex flex-col items-center justify-between py-12 px-8 screen-fade-in" style={{paddingTop: 'calc(40px + var(--safe-area-inset-top))', paddingBottom: 'calc(40px + var(--safe-area-inset-bottom))'}}>
+        <div className="absolute inset-0 opacity-30 pointer-events-none">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="cloud" style={{width: 150 + Math.random() * 100, height: 40, top: 10 + i * 20 + '%', left: '-200px', animationDuration: 15 + Math.random() * 10 + 's', animationDelay: i * 2 + 's'}} />
+          ))}
+        </div>
         
-        <div className="absolute top-10 right-10 w-32 h-32 bg-yellow-200 rounded-full shadow-[0_0_80px_rgba(253,224,71,0.6)] animate-pulse opacity-70"></div>
-
-        <div className="relative z-10 text-center">
-          <div className="inline-block animate-float">
-             <span className="text-[140px] mb-4 block drop-shadow-[0_20px_40px_rgba(0,0,0,0.3)]">🎈</span>
+        <div className="relative z-10 flex flex-col items-center">
+          <div className="w-32 h-32 mb-4 bg-white/20 rounded-full flex items-center justify-center animate-float border-2 border-white/30 backdrop-blur-md">
+             <span className="text-7xl drop-shadow-xl">🎈</span>
           </div>
-          <h1 className="text-8xl font-game text-white drop-shadow-[0_10px_0_#1d4ed8] mb-2 leading-tight tracking-tighter uppercase">MATH<br/>BALLOON</h1>
-          <div className="inline-block bg-yellow-400 px-8 py-3 rounded-3xl rotate-[-3deg] shadow-2xl border-4 border-white">
-            <h2 className="text-3xl font-game text-blue-900 uppercase">Pro Master</h2>
+          <h1 className="text-6xl sm:text-7xl font-game text-white text-outline leading-none text-center tracking-tight mb-2">MATH<br/>BALLOON</h1>
+          <div className="bg-yellow-400 px-6 py-2 rounded-2xl rotate-[-2deg] shadow-xl border-4 border-white mt-2">
+            <h2 className="text-2xl font-game text-blue-900 uppercase">PRO MASTER</h2>
           </div>
         </div>
         
-        <div className="relative z-10 flex flex-col gap-6 w-full max-w-xs">
-          <GameButton onClick={() => { playSound('click'); setGameState(GameState.LEVEL_MAP); }} variant="secondary" className="py-8 text-4xl shadow-[0_12px_0_0_#d97706] rounded-[45px] border-none uppercase">
-            🚀 PLAY
+        <div className="relative z-10 flex flex-col gap-5 w-full max-w-xs">
+          <GameButton onClick={() => { playSound('click'); setGameState(GameState.LEVEL_MAP); }} variant="secondary" className="py-6 text-3xl shadow-[0_10px_0_0_#d97706] rounded-full uppercase">
+            🚀 PLAY NOW
           </GameButton>
           <div className="grid grid-cols-2 gap-4">
-             <GameButton onClick={() => {}} variant="primary" className="py-5 text-xl uppercase">🏆 RANK</GameButton>
-             <GameButton onClick={() => setShowSettings(true)} variant="primary" className="py-5 text-xl uppercase">⚙️ OPTS</GameButton>
+             <GameButton onClick={() => setShowRank(true)} variant="primary" className="py-4 text-lg uppercase font-black">🏆 RANK</GameButton>
+             <GameButton onClick={() => setShowSettings(true)} variant="primary" className="py-4 text-lg uppercase font-black">⚙️ OPTS</GameButton>
           </div>
         </div>
 
+        {/* RANK / LEADERBOARD MODAL */}
+        {showRank && (
+          <div className="fixed inset-0 z-[700] flex items-center justify-center p-6 screen-fade-in">
+            <div className="absolute inset-0 bg-blue-950/80 backdrop-blur-md" onClick={() => setShowRank(false)} />
+            <div className="relative bg-white rounded-[40px] w-full max-w-md overflow-hidden shadow-2xl border-t-[10px] border-yellow-400">
+               <div className="p-8">
+                  <h3 className="text-4xl font-game text-blue-600 mb-6 uppercase text-center">Top Poppers</h3>
+                  <div className="space-y-3 mb-8">
+                    {MOCK_RANKING.map((player) => (
+                      <div key={player.rank} className="flex items-center justify-between bg-blue-50 p-4 rounded-2xl border border-blue-100 transition-all hover:scale-[1.02]">
+                        <div className="flex items-center gap-4">
+                          <span className={`w-8 h-8 flex items-center justify-center rounded-full font-game text-white shadow-md ${player.rank === 1 ? 'bg-yellow-400' : player.rank === 2 ? 'bg-slate-400' : player.rank === 3 ? 'bg-amber-600' : 'bg-blue-300'}`}>
+                            {player.rank}
+                          </span>
+                          <span className="text-2xl">{player.avatar}</span>
+                          <span className="font-black text-blue-800 uppercase text-lg">{player.name}</span>
+                        </div>
+                        <span className="font-game text-blue-500 text-xl">{player.score.toLocaleString()}</span>
+                      </div>
+                    ))}
+                  </div>
+                  <div className="bg-yellow-100 p-4 rounded-3xl border-2 border-yellow-300 flex justify-between items-center mb-8">
+                    <span className="font-black text-yellow-800 uppercase">Your Best</span>
+                    <span className="font-game text-yellow-600 text-2xl">{stats.maxCombo * 100}</span>
+                  </div>
+                  <GameButton onClick={() => setShowRank(false)} variant="secondary" className="w-full py-4 shadow-[0_6px_0_0_#d97706]">GO BACK</GameButton>
+               </div>
+            </div>
+          </div>
+        )}
+
+        {/* SETTINGS / LEGAL MODAL */}
         {showSettings && (
           <div className="fixed inset-0 z-[600] flex items-center justify-center p-6 screen-fade-in">
-            <div className="absolute inset-0 bg-black/60 backdrop-blur-md" onClick={closeSettings} />
-            <div className="relative bg-white rounded-[50px] w-full max-w-sm overflow-hidden shadow-2xl border-t-[12px] border-blue-500">
-              <div className="p-8 text-center max-h-[85vh] flex flex-col">
-                <h3 className="text-4xl font-game text-blue-600 mb-6 uppercase">Settings</h3>
+            <div className="absolute inset-0 bg-blue-950/70 backdrop-blur-lg" onClick={closeSettings} />
+            <div className="relative bg-white rounded-[40px] w-full max-w-sm overflow-hidden shadow-2xl border-t-[10px] border-blue-500">
+              <div className="p-8 text-center flex flex-col">
+                <h3 className="text-3xl font-game text-blue-600 mb-6 uppercase">Settings</h3>
                 
-                <div className="flex-1 overflow-y-auto pr-2 custom-scrollbar">
-                  {!legalView ? (
-                    <div className="flex flex-col gap-5 mb-8">
-                      <div className="flex items-center justify-between bg-blue-50 p-6 rounded-[30px] border-2 border-blue-100">
-                        <span className="font-black text-blue-800 text-xl">{isAudioMuted ? '🔇' : '🔊'} SOUND</span>
-                        <button onClick={toggleMute} className={`w-20 h-10 rounded-full transition-colors relative ${isAudioMuted ? 'bg-gray-300' : 'bg-green-400'}`}>
-                          <div className={`absolute top-1 w-8 h-8 bg-white rounded-full transition-all ${isAudioMuted ? 'left-1' : 'left-11'}`} />
-                        </button>
-                      </div>
-                      
-                      <button 
-                        onClick={() => setLegalView('privacy')}
-                        className="w-full py-4 bg-gray-100 text-gray-700 font-bold rounded-2xl hover:bg-gray-200 transition-colors uppercase tracking-wider"
-                      >
-                        Privacy Policy
-                      </button>
-
-                      <div className="p-4 bg-yellow-50 rounded-2xl border border-yellow-100">
-                        <p className="text-sm text-yellow-800 font-bold">Kid-Safe Gaming</p>
-                        <p className="text-[10px] text-yellow-600 mt-1 uppercase">Math Pop! is designed for children. We do not collect any personal data.</p>
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="text-left bg-blue-50/50 p-6 rounded-3xl border-2 border-blue-100/50 mb-6">
-                      <button onClick={() => setLegalView(null)} className="text-blue-500 font-black mb-4 flex items-center gap-2">⬅️ BACK</button>
-                      <h4 className="text-xl font-game text-blue-800 mb-4 uppercase">Privacy Policy</h4>
-                      <div className="text-[12px] text-blue-900/80 font-bold leading-relaxed space-y-4">
-                        <p>Welcome to Math Pop!</p>
-                        <p><strong>1. Data Collection:</strong> We do NOT collect any personal information. No names, emails, or location data are stored or shared.</p>
-                        <p><strong>2. Game Progress:</strong> High scores and level progress are stored locally on your device only.</p>
-                        <p><strong>3. COPPA Compliance:</strong> This app is fully compliant with the Children's Online Privacy Protection Act. We do not track children.</p>
-                        <p><strong>4. Third Parties:</strong> We do not use third-party tracking or analytics that identify individual users.</p>
-                        <p><strong>5. Contact:</strong> For any privacy concerns, please contact our support team.</p>
-                        <p className="pt-4 opacity-50 italic">Last Updated: March 2024</p>
-                      </div>
-                    </div>
-                  )}
+                <div className="flex flex-col gap-3 mb-8">
+                  <div className="flex items-center justify-between bg-blue-50 p-5 rounded-3xl border-2 border-blue-100">
+                    <span className="font-black text-blue-800 text-lg uppercase">{isAudioMuted ? '🔇' : '🔊'} Sound FX</span>
+                    <button onClick={toggleMute} className={`w-16 h-8 rounded-full transition-all relative ${isAudioMuted ? 'bg-gray-300' : 'bg-emerald-400'}`}>
+                      <div className={`absolute top-1 w-6 h-6 bg-white rounded-full transition-all ${isAudioMuted ? 'left-1' : 'left-9'} shadow-md`} />
+                    </button>
+                  </div>
+                  
+                  <button onClick={() => setLegalView('privacy')} className="w-full py-3 bg-gray-50 text-blue-600 font-bold rounded-2xl hover:bg-blue-100 transition-colors uppercase text-sm tracking-widest border border-blue-100">
+                    Privacy Policy
+                  </button>
+                  <button onClick={() => setLegalView('terms')} className="w-full py-3 bg-gray-50 text-blue-600 font-bold rounded-2xl hover:bg-blue-100 transition-colors uppercase text-sm tracking-widest border border-blue-100">
+                    Terms of Service
+                  </button>
                 </div>
 
-                <GameButton onClick={closeSettings} variant="secondary" className="w-full mt-4 py-5 shadow-[0_8px_0_0_#d97706]">CLOSE</GameButton>
+                <GameButton onClick={closeSettings} variant="secondary" className="w-full py-4 text-xl shadow-[0_6px_0_0_#d97706]">CLOSE</GameButton>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* FULL SCREEN LEGAL VIEW */}
+        {legalView && (
+          <div className="fixed inset-0 z-[800] bg-white flex flex-col screen-fade-in" style={{paddingTop: 'var(--safe-area-inset-top)', paddingBottom: 'var(--safe-area-inset-bottom)'}}>
+             <div className="p-6 border-b-2 border-gray-100 flex justify-between items-center">
+                <h2 className="text-2xl font-game text-blue-600 uppercase">
+                  {legalView === 'privacy' ? 'Privacy Policy' : 'Terms of Service'}
+                </h2>
+                <button onClick={() => setLegalView(null)} className="bg-gray-100 p-2 rounded-xl text-2xl">✖️</button>
+             </div>
+             <div className="flex-1 overflow-y-auto p-8 text-gray-700 space-y-6 leading-relaxed">
+                {legalView === 'privacy' ? (
+                  <>
+                    <p className="font-bold text-xl">1. Information Collection</p>
+                    <p>Math Balloon Academy does not collect, store, or share any personal information. We do not require account registration. All game progress and high scores are stored locally on your device.</p>
+                    <p className="font-bold text-xl">2. Children's Privacy (COPPA)</p>
+                    <p>Our app is designed for children. We do not collect any personal data from children. We do not use third-party tracking or behavioral advertising.</p>
+                    <p className="font-bold text-xl">3. Security</p>
+                    <p>Since no data is transmitted to our servers, your data remains secure on your personal device.</p>
+                    <p className="font-bold text-xl">4. Changes to Policy</p>
+                    <p>We may update this policy occasionally. Any changes will be reflected here in the app settings.</p>
+                  </>
+                ) : (
+                  <>
+                    <p className="font-bold text-xl">1. Acceptable Use</p>
+                    <p>Users are granted a non-exclusive license to use this app for personal, educational purposes. Any commercial exploitation or redistribution is prohibited.</p>
+                    <p className="font-bold text-xl">2. Intellectual Property</p>
+                    <p>All game assets, characters, and sounds are the property of the developers. Unauthorized reproduction is strictly forbidden.</p>
+                    <p className="font-bold text-xl">3. Disclaimer</p>
+                    <p>The app is provided "as is" without warranties of any kind. We are not responsible for any data loss occurring on the user's device.</p>
+                    <p className="font-bold text-xl">4. Termination</p>
+                    <p>We reserve the right to modify or discontinue the app at any time without notice.</p>
+                  </>
+                )}
+             </div>
+             <div className="p-6">
+                <GameButton onClick={() => setLegalView(null)} variant="primary" className="w-full py-4 uppercase">I Understand</GameButton>
+             </div>
           </div>
         )}
       </div>
@@ -372,24 +433,24 @@ const App: React.FC = () => {
 
   if (gameState === GameState.LEVEL_MAP) {
     return (
-      <div className="fixed inset-0 sky-bg overflow-y-auto p-4 flex flex-col items-center z-[400] screen-fade-in">
-        <div className="flex justify-between w-full max-w-md items-center mb-10 sticky top-0 bg-white/90 backdrop-blur-xl py-6 z-20 px-6 rounded-[40px] shadow-2xl border border-white/50">
-          <button onClick={() => { playSound('click'); setGameState(GameState.HOME); }} className="bg-blue-500 text-white p-4 rounded-3xl shadow-lg text-3xl active:scale-90 transition-transform">🏠</button>
-          <h2 className="text-3xl font-game text-blue-600 uppercase">LEVELS</h2>
-          <div className="bg-yellow-100 px-5 py-2 rounded-3xl flex items-center gap-2 border-2 border-yellow-200">
-             <span className="text-2xl">⭐</span>
-             <span className="font-game text-yellow-700 text-xl">{stats.stars}</span>
+      <div className="fixed inset-0 sky-bg overflow-y-auto p-4 flex flex-col items-center z-[400] screen-fade-in" style={{paddingTop: 'calc(20px + var(--safe-area-inset-top))'}}>
+        <div className="flex justify-between w-full max-w-md items-center mb-8 sticky top-0 bg-white/90 backdrop-blur-xl py-4 z-20 px-6 rounded-3xl shadow-xl border border-white/50">
+          <button onClick={() => { playSound('click'); setGameState(GameState.HOME); }} className="bg-blue-500 text-white p-3 rounded-2xl shadow-lg text-2xl active:scale-90 transition-transform">🏠</button>
+          <h2 className="text-2xl font-game text-blue-600 uppercase">MAP</h2>
+          <div className="bg-yellow-100 px-4 py-1.5 rounded-2xl flex items-center gap-2 border-2 border-yellow-200 shadow-sm">
+             <span className="text-xl">⭐</span>
+             <span className="font-game text-yellow-700 text-lg">{stats.stars}</span>
           </div>
         </div>
-        <div className="grid grid-cols-4 gap-6 w-full max-w-md pb-24 px-4">
+        <div className="grid grid-cols-4 gap-4 w-full max-w-md pb-12 px-2">
           {LEVELS.map((lvl) => (
             <button 
               key={lvl.id}
               onClick={() => startLevel(lvl.id)}
-              className={`aspect-square rounded-[30px] font-game text-3xl flex items-center justify-center shadow-xl transform active:scale-90 transition-all border-b-[10px]
+              className={`aspect-square rounded-2xl font-game text-2xl flex items-center justify-center shadow-lg transform active:scale-90 transition-all border-b-[8px]
                 ${lvl.id <= stats.level 
                   ? 'bg-gradient-to-b from-yellow-300 to-yellow-500 text-blue-900 border-yellow-700' 
-                  : 'bg-white/30 text-white/50 border-white/20 cursor-not-allowed'}
+                  : 'bg-white/20 text-white/40 border-white/10 cursor-not-allowed'}
               `}
               disabled={lvl.id > stats.level}
             >
@@ -404,25 +465,25 @@ const App: React.FC = () => {
   if (gameState === GameState.PLAYING || gameState === GameState.PAUSED) {
     return (
       <div className="fixed inset-0 sky-bg flex flex-col select-none touch-none overflow-hidden h-screen screen-fade-in">
-        <div className="absolute top-0 left-0 right-0 z-50 px-6 pt-12 pointer-events-none flex justify-between items-start">
-          <div className="flex gap-4 pointer-events-auto">
-            <button onClick={() => { playSound('click'); setGameState(GameState.PAUSED); }} className="bg-white/90 backdrop-blur p-4 rounded-[25px] shadow-2xl active:scale-90 transition-transform border-b-4 border-gray-200 text-3xl">⏸️</button>
-            <div className="bg-white/90 backdrop-blur px-6 py-2 rounded-[25px] shadow-2xl border-b-4 border-gray-200 flex flex-col justify-center">
-              <p className="text-[12px] font-black text-blue-400 uppercase tracking-widest leading-none">SCORE</p>
-              <p className="text-2xl font-game text-blue-600 leading-none">{stats.score}</p>
+        <div className="absolute top-0 left-0 right-0 z-50 px-6 pt-12 pointer-events-none flex justify-between items-start" style={{paddingTop: 'calc(20px + var(--safe-area-inset-top))'}}>
+          <div className="flex gap-3 pointer-events-auto">
+            <button onClick={() => { playSound('click'); setGameState(GameState.PAUSED); }} className="bg-white/80 backdrop-blur-md p-3.5 rounded-2xl shadow-xl active:scale-90 transition-transform border border-white/40 text-2xl">⏸️</button>
+            <div className="bg-white/80 backdrop-blur-md px-5 py-2 rounded-2xl shadow-xl border border-white/40 flex flex-col justify-center">
+              <p className="text-[10px] font-black text-blue-400 uppercase tracking-widest leading-none mb-1">SCORE</p>
+              <p className="text-xl font-game text-blue-600 leading-none">{stats.score}</p>
             </div>
           </div>
           
-          <div className="flex flex-col items-end gap-3">
-            <div className="bg-white/90 backdrop-blur px-6 py-3 rounded-[25px] shadow-2xl border-b-4 border-gray-200 flex gap-2 items-center">
+          <div className="flex flex-col items-end gap-2">
+            <div className="bg-white/80 backdrop-blur-md px-4 py-2.5 rounded-2xl shadow-xl border border-white/40 flex gap-1.5 items-center">
               {[...Array(3)].map((_, i) => (
-                <span key={i} className={`text-3xl transition-all duration-500 ${i < stats.lives ? 'scale-110 drop-shadow-md' : 'opacity-20 scale-75 grayscale'}`}>❤️</span>
+                <span key={i} className={`text-2xl transition-all duration-300 ${i < stats.lives ? 'scale-110 drop-shadow-sm' : 'opacity-20 scale-75 grayscale'}`}>❤️</span>
               ))}
             </div>
           </div>
         </div>
 
-        <div ref={skyRef} className={`flex-1 relative overflow-hidden transition-all duration-700 ${isFrozen ? 'brightness-125 saturate-150' : ''}`}>
+        <div ref={skyRef} className={`flex-1 relative overflow-hidden transition-all duration-700 ${isFrozen ? 'brightness-125 saturate-150 backdrop-blue-100' : ''}`}>
           {particles.map(p => (
             <div 
               key={p.id}
@@ -434,7 +495,7 @@ const App: React.FC = () => {
                 height: p.size,
                 backgroundColor: p.color,
                 opacity: p.life,
-                boxShadow: `0 0 15px ${p.color}, 0 0 5px #fff`,
+                boxShadow: `0 0 12px ${p.color}`,
                 transform: 'translate(-50%, -50%)',
               }}
             />
@@ -444,31 +505,32 @@ const App: React.FC = () => {
             <BalloonComponent key={balloon.id} balloon={balloon} />
           ))}
           
-          {isFrozen && <div className="absolute inset-0 pointer-events-none flex items-center justify-center text-9xl opacity-30 animate-pulse">❄️</div>}
+          {isFrozen && <div className="absolute inset-0 pointer-events-none flex items-center justify-center text-9xl opacity-20 animate-pulse">❄️</div>}
         </div>
         
-        <div className="relative z-[60] px-6 pb-[50px] pt-8 bg-white/95 backdrop-blur-2xl border-t-[10px] border-blue-500 rounded-t-[60px] shadow-[0_-30px_60px_rgba(0,0,0,0.15)]">
-          <div className="grid grid-cols-3 gap-4 max-w-lg mx-auto">
+        <div className="relative z-[60] px-6 pb-12 pt-8 bg-white/95 backdrop-blur-xl border-t-[8px] border-blue-500 rounded-t-[50px] shadow-[0_-15px_40px_rgba(0,0,0,0.1)]" style={{paddingBottom: 'calc(30px + var(--safe-area-inset-bottom))'}}>
+          <div className="grid grid-cols-3 gap-3.5 max-w-md mx-auto">
             {options.map(ans => (
               <button 
                 key={ans} 
                 onClick={() => handleAnswer(ans)} 
-                className="py-7 bg-blue-500 text-white font-game text-4xl rounded-[35px] btn-3d border-blue-700 shadow-2xl flex items-center justify-center active:bg-blue-600 transition-all"
+                className="py-6 bg-blue-500 text-white font-game text-3xl rounded-[30px] btn-3d border-blue-700 shadow-xl flex items-center justify-center active:bg-blue-600 transition-all relative overflow-hidden"
               >
-                {ans}
+                <div className="absolute inset-0 glossy opacity-30 pointer-events-none" />
+                <span className="relative z-10">{ans}</span>
               </button>
             ))}
           </div>
         </div>
 
         {gameState === GameState.PAUSED && (
-          <div className="absolute inset-0 z-[100] bg-blue-900/60 backdrop-blur-md flex items-center justify-center p-8">
-            <div className="bg-white p-12 rounded-[60px] shadow-2xl w-full max-w-sm text-center border-t-[15px] border-blue-500">
-              <h2 className="text-5xl font-game text-blue-600 mb-10 uppercase tracking-tight">Paused</h2>
-              <div className="flex flex-col gap-5">
-                <GameButton onClick={() => setGameState(GameState.PLAYING)} variant="success" className="py-6 text-2xl uppercase">Resume</GameButton>
-                <GameButton onClick={() => { playSound('click'); setGameState(GameState.LEVEL_MAP); }} variant="primary" className="py-6 text-2xl uppercase">Levels</GameButton>
-                <GameButton onClick={() => { playSound('click'); setGameState(GameState.HOME); }} variant="danger" className="py-6 text-2xl uppercase">Quit</GameButton>
+          <div className="absolute inset-0 z-[100] bg-blue-950/60 backdrop-blur-lg flex items-center justify-center p-8">
+            <div className="bg-white p-10 rounded-[45px] shadow-2xl w-full max-w-sm text-center border-t-[10px] border-blue-500">
+              <h2 className="text-4xl font-game text-blue-600 mb-8 uppercase">Game Paused</h2>
+              <div className="flex flex-col gap-4">
+                <GameButton onClick={() => setGameState(GameState.PLAYING)} variant="success" className="py-5 text-xl uppercase">Resume</GameButton>
+                <GameButton onClick={() => { playSound('click'); setGameState(GameState.LEVEL_MAP); }} variant="primary" className="py-5 text-xl uppercase">Level Map</GameButton>
+                <GameButton onClick={() => { playSound('click'); setGameState(GameState.HOME); }} variant="danger" className="py-5 text-xl uppercase">Quit Game</GameButton>
               </div>
             </div>
           </div>
@@ -479,16 +541,19 @@ const App: React.FC = () => {
 
   if (gameState === GameState.LEVEL_COMPLETE) {
     return (
-      <div className="fixed inset-0 bg-gradient-to-br from-green-500 to-emerald-700 flex flex-col items-center justify-center p-8 text-white z-[200] screen-fade-in">
-        <span className="text-[120px] mb-8 animate-bounce drop-shadow-[0_10px_30px_rgba(0,0,0,0.3)]">🌟</span>
-        <h2 className="text-6xl font-game mb-4 text-center tracking-tighter uppercase">VICTORY!</h2>
-        <div className="bg-white/20 p-10 rounded-[50px] w-full max-w-sm mb-12 shadow-2xl border border-white/30 backdrop-blur-lg">
-          <div className="flex justify-between items-center mb-4 uppercase"><span className="text-xl font-black">Score</span><span className="text-3xl font-game">{stats.score}</span></div>
-          <div className="flex justify-between items-center uppercase"><span className="text-xl font-black">Stars Earned</span><span className="text-3xl font-game">⭐⭐⭐</span></div>
+      <div className="fixed inset-0 bg-gradient-to-br from-emerald-500 to-teal-700 flex flex-col items-center justify-center p-8 text-white z-[200] screen-fade-in">
+        <div className="relative mb-6">
+          <span className="text-[120px] animate-bounce drop-shadow-[0_10px_30px_rgba(0,0,0,0.4)] block">🌟</span>
+          <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 bg-white text-emerald-600 font-game px-6 py-1 rounded-full text-xl shadow-lg border-2 border-white">GREAT!</div>
         </div>
-        <div className="flex flex-col gap-5 w-full max-w-sm">
-          <GameButton onClick={() => { setStats(s => ({ ...s, level: Math.max(s.level, currentLevelConfig.id + 1), stars: s.stars + 3 })); startLevel(currentLevelConfig.id + 1); }} variant="secondary" className="py-7 text-3xl shadow-[0_10px_0_0_#d97706] uppercase">Next Level ➡️</GameButton>
-          <GameButton onClick={() => setGameState(GameState.LEVEL_MAP)} variant="primary" className="py-6 text-2xl uppercase">Map</GameButton>
+        <h2 className="text-5xl font-game mb-6 text-center tracking-tight uppercase text-outline">LEVEL CLEARED!</h2>
+        <div className="bg-white/10 backdrop-blur-md p-8 rounded-[40px] w-full max-w-sm mb-10 shadow-2xl border border-white/20">
+          <div className="flex justify-between items-center mb-4 uppercase"><span className="text-lg font-black opacity-80">Score</span><span className="text-3xl font-game">{stats.score}</span></div>
+          <div className="flex justify-between items-center uppercase"><span className="text-lg font-black opacity-80">Stars</span><span className="text-2xl font-game">⭐⭐⭐</span></div>
+        </div>
+        <div className="flex flex-col gap-4 w-full max-w-sm">
+          <GameButton onClick={() => { setStats(s => ({ ...s, level: Math.max(s.level, currentLevelConfig.id + 1), stars: s.stars + 3 })); startLevel(currentLevelConfig.id + 1); }} variant="secondary" className="py-6 text-2xl shadow-[0_8px_0_0_#d97706] uppercase rounded-full">Next Day ➡️</GameButton>
+          <GameButton onClick={() => setGameState(GameState.LEVEL_MAP)} variant="primary" className="py-5 text-xl uppercase rounded-full">Back to Map</GameButton>
         </div>
       </div>
     );
@@ -496,15 +561,15 @@ const App: React.FC = () => {
 
   if (gameState === GameState.GAME_OVER) {
     return (
-      <div className="fixed inset-0 bg-gradient-to-br from-red-600 to-rose-900 flex flex-col items-center justify-center p-8 text-white z-[200] screen-fade-in">
-        <div className="relative mb-12">
-          <span className="text-[100px] opacity-40 grayscale">🎈</span>
-          <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-9xl">💥</span>
+      <div className="fixed inset-0 bg-gradient-to-br from-rose-600 to-red-900 flex flex-col items-center justify-center p-8 text-white z-[200] screen-fade-in">
+        <div className="relative mb-8 w-40 h-40 bg-white/10 rounded-full flex items-center justify-center backdrop-blur-sm border border-white/20">
+          <span className="text-[80px] grayscale opacity-40">🎈</span>
+          <span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-8xl">💥</span>
         </div>
-        <h2 className="text-6xl font-game mb-12 uppercase tracking-tighter">TRY AGAIN!</h2>
-        <div className="flex flex-col gap-5 w-full max-w-sm">
-          <GameButton onClick={() => startLevel(currentLevelConfig.id)} variant="secondary" className="py-7 text-3xl shadow-[0_10px_0_0_#d97706] uppercase">Retry 🔄</GameButton>
-          <GameButton onClick={() => setGameState(GameState.HOME)} variant="danger" className="py-6 text-2xl uppercase">Quit</GameButton>
+        <h2 className="text-5xl font-game mb-10 uppercase tracking-tight text-outline">OUT OF LIVES!</h2>
+        <div className="flex flex-col gap-4 w-full max-w-sm">
+          <GameButton onClick={() => startLevel(currentLevelConfig.id)} variant="secondary" className="py-6 text-2xl shadow-[0_8px_0_0_#d97706] uppercase rounded-full">Try Again 🔄</GameButton>
+          <GameButton onClick={() => setGameState(GameState.HOME)} variant="danger" className="py-5 text-xl uppercase rounded-full">Main Menu</GameButton>
         </div>
       </div>
     );

@@ -17,13 +17,13 @@ const GameButton: React.FC<GameButtonProps> = ({
   className = '',
   disabled = false
 }) => {
-  const baseStyles = "px-6 py-3 font-game text-lg sm:text-xl rounded-2xl shadow-[0_4px_0_0_rgba(0,0,0,0.15)] active:translate-y-1 active:shadow-none transition-all transform flex items-center justify-center gap-2 select-none touch-manipulation";
+  const baseStyles = "px-6 py-4 font-game text-xl sm:text-2xl rounded-3xl btn-3d transition-all transform flex items-center justify-center gap-2 select-none touch-manipulation overflow-hidden relative";
   
   const variants = {
-    primary: "bg-blue-400 text-white border-b-4 border-blue-600 active:bg-blue-500",
-    secondary: "bg-yellow-400 text-white border-b-4 border-yellow-600 active:bg-yellow-500",
-    danger: "bg-red-500 text-white border-b-4 border-red-700 active:bg-red-600",
-    success: "bg-green-500 text-white border-b-4 border-green-700 active:bg-green-600",
+    primary: "bg-blue-500 text-white border-blue-700 hover:bg-blue-400 active:bg-blue-600",
+    secondary: "bg-yellow-400 text-white border-yellow-600 hover:bg-yellow-300 active:bg-yellow-500",
+    danger: "bg-rose-500 text-white border-rose-700 hover:bg-rose-400 active:bg-rose-600",
+    success: "bg-emerald-500 text-white border-emerald-700 hover:bg-emerald-400 active:bg-emerald-600",
   };
 
   const handleClick = () => {
@@ -37,9 +37,10 @@ const GameButton: React.FC<GameButtonProps> = ({
     <button 
       onClick={handleClick}
       disabled={disabled}
-      className={`${baseStyles} ${variants[variant]} ${className} ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+      className={`${baseStyles} ${variants[variant]} ${className} ${disabled ? 'opacity-50 cursor-not-allowed grayscale' : ''}`}
     >
-      {children}
+      <div className="absolute inset-0 glossy opacity-50 pointer-events-none" />
+      <span className="relative z-10 drop-shadow-md">{children}</span>
     </button>
   );
 };
