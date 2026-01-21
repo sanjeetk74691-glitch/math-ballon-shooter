@@ -231,6 +231,16 @@ const App: React.FC = () => {
     playSound('click');
   };
 
+  const openModal = (view: 'privacy' | 'terms' | 'about' | null) => {
+    playSound('click');
+    setLegalView(view);
+  };
+
+  const closeModal = () => {
+    playSound('click');
+    setLegalView(null);
+  };
+
   const LegalContent = {
     privacy: {
       title: "Privacy Policy",
@@ -245,6 +255,8 @@ const App: React.FC = () => {
       body: "Developed with love for learning. Our mission is to make math fun and accessible through gamification. This project combines classic arcade mechanics with curriculum-based arithmetic challenges. Version 1.0.2 - Designed for Global Learners."
     }
   };
+
+  // --- RENDERING SCREENS ---
 
   if (gameState === GameState.SPLASH) {
     return (
@@ -275,12 +287,12 @@ const App: React.FC = () => {
         </div>
         
         <div className="relative z-10 flex flex-col gap-5 w-full max-w-xs">
-          <GameButton onClick={() => setGameState(GameState.LEVEL_MAP)} variant="secondary" className="py-7 text-3xl shadow-[0_10px_0_0_#d97706] rounded-3xl">
+          <GameButton onClick={() => { playSound('click'); setGameState(GameState.LEVEL_MAP); }} variant="secondary" className="py-7 text-3xl shadow-[0_10px_0_0_#d97706] rounded-3xl">
             🚀 PLAY NOW
           </GameButton>
           <div className="grid grid-cols-2 gap-4">
-             <GameButton onClick={() => {}} variant="primary" className="py-4 text-lg">🏆 BEST</GameButton>
-             <GameButton onClick={() => setShowSettings(true)} variant="primary" className="py-4 text-lg">⚙️ SETTINGS</GameButton>
+             <GameButton onClick={() => { playSound('click'); }} variant="primary" className="py-4 text-lg">🏆 BEST</GameButton>
+             <GameButton onClick={() => { playSound('click'); setShowSettings(true); }} variant="primary" className="py-4 text-lg">⚙️ SETTINGS</GameButton>
           </div>
         </div>
 
@@ -300,12 +312,12 @@ const App: React.FC = () => {
                     </button>
                   </div>
                   <div className="grid grid-cols-1 gap-3">
-                    <button onClick={() => setLegalView('privacy')} className="text-blue-500 font-bold hover:underline py-2">Privacy Policy</button>
-                    <button onClick={() => setLegalView('terms')} className="text-blue-500 font-bold hover:underline py-2">Terms of Service</button>
-                    <button onClick={() => setLegalView('about')} className="text-blue-500 font-bold hover:underline py-2">About App</button>
+                    <button onClick={() => openModal('privacy')} className="text-blue-500 font-bold hover:underline py-2">Privacy Policy</button>
+                    <button onClick={() => openModal('terms')} className="text-blue-500 font-bold hover:underline py-2">Terms of Service</button>
+                    <button onClick={() => openModal('about')} className="text-blue-500 font-bold hover:underline py-2">About App</button>
                   </div>
                 </div>
-                <GameButton onClick={() => setShowSettings(false)} variant="secondary" className="w-full">CLOSE</GameButton>
+                <GameButton onClick={() => { playSound('click'); setShowSettings(false); }} variant="secondary" className="w-full">CLOSE</GameButton>
               </div>
             </div>
           </div>
@@ -313,7 +325,7 @@ const App: React.FC = () => {
 
         {legalView && (
           <div className="fixed inset-0 z-[300] flex items-center justify-center p-6">
-            <div className="absolute inset-0 bg-black/70 backdrop-blur-md" onClick={() => setLegalView(null)} />
+            <div className="absolute inset-0 bg-black/70 backdrop-blur-md" onClick={closeModal} />
             <div className="relative bg-white rounded-[40px] w-full max-w-sm h-[80vh] flex flex-col shadow-2xl overflow-hidden border-t-8 border-yellow-400">
               <div className="p-8 flex-1 overflow-y-auto text-left">
                 <h3 className="text-2xl font-game text-yellow-600 mb-6 uppercase">{LegalContent[legalView].title}</h3>
@@ -321,7 +333,7 @@ const App: React.FC = () => {
                 <div className="h-8" />
               </div>
               <div className="p-6 bg-gray-50 border-t">
-                <GameButton onClick={() => setLegalView(null)} variant="primary" className="w-full">GOT IT</GameButton>
+                <GameButton onClick={closeModal} variant="primary" className="w-full">GOT IT</GameButton>
               </div>
             </div>
           </div>
@@ -338,7 +350,7 @@ const App: React.FC = () => {
     return (
       <div className="fixed inset-0 bg-blue-50 overflow-y-auto p-4 flex flex-col items-center z-[400]">
         <div className="flex justify-between w-full max-w-md items-center mb-6 sticky top-0 bg-blue-50/90 backdrop-blur py-4 z-20 px-2 rounded-b-3xl">
-          <button onClick={() => setGameState(GameState.HOME)} className="bg-white p-3 rounded-2xl shadow-md text-2xl active:scale-90 transition-transform">🏠</button>
+          <button onClick={() => { playSound('click'); setGameState(GameState.HOME); }} className="bg-white p-3 rounded-2xl shadow-md text-2xl active:scale-90 transition-transform">🏠</button>
           <h2 className="text-3xl font-game text-blue-600 tracking-tight">LEVEL MAP</h2>
           <div className="bg-white px-4 py-2 rounded-2xl shadow-md flex items-center gap-1">
              <span className="text-yellow-400">⭐</span>
@@ -367,7 +379,7 @@ const App: React.FC = () => {
   if (gameState === GameState.PLAYING || gameState === GameState.PAUSED) {
     return (
       <div className="fixed inset-0 bg-sky-200 flex flex-col select-none touch-none overflow-hidden h-screen">
-        <div className="bg-white/95 p-3 shadow-md flex justify-between items-center z-50 border-b-2 border-blue-100">
+        <div className="bg-white/95 p-3 shadow-md flex justify-between items-center z-50 border-b-2 border-blue-100 h-16">
           <div className="flex gap-3 items-center">
             <button onClick={() => { playSound('click'); setGameState(GameState.PAUSED); }} className="text-2xl bg-gray-100 p-2 rounded-xl active:scale-90 transition-transform">⏸️</button>
             <div className="leading-tight">
@@ -395,19 +407,28 @@ const App: React.FC = () => {
           ))}
           {isFrozen && <div className="absolute inset-0 pointer-events-none flex items-center justify-center text-9xl opacity-20 animate-pulse">❄️</div>}
         </div>
-        <div className="bg-white/95 p-4 pb-8 border-t-4 border-blue-200 grid grid-cols-3 gap-3 z-50">
+        
+        {/* Answer Selection - Fixed height and padding to prevent clipping */}
+        <div className="bg-white/95 p-4 pb-12 border-t-8 border-blue-200 grid grid-cols-3 gap-3 z-50 shadow-[0_-10px_20px_rgba(0,0,0,0.05)]">
           {options.map(ans => (
-            <button key={ans} onClick={() => handleAnswer(ans)} className="py-4 bg-blue-500 text-white font-game text-2xl rounded-2xl shadow-[0_4px_0_0_#2563eb] active:translate-y-1 active:shadow-none active:bg-blue-600 transition-all flex items-center justify-center">{ans}</button>
+            <button 
+              key={ans} 
+              onClick={() => handleAnswer(ans)} 
+              className="py-5 bg-blue-500 text-white font-game text-3xl rounded-3xl border-b-[6px] border-blue-700 shadow-lg active:translate-y-1 active:border-b-0 transition-all flex items-center justify-center"
+            >
+              {ans}
+            </button>
           ))}
         </div>
+
         {gameState === GameState.PAUSED && (
           <div className="absolute inset-0 z-[100] bg-blue-900/40 backdrop-blur-md flex items-center justify-center p-8">
             <div className="bg-white p-10 rounded-[40px] shadow-2xl w-full max-w-xs text-center border-t-8 border-blue-400">
               <h2 className="text-4xl font-game text-blue-600 mb-8 uppercase tracking-widest">Paused</h2>
               <div className="flex flex-col gap-4">
-                <GameButton onClick={() => setGameState(GameState.PLAYING)} variant="success">RESUME</GameButton>
-                <GameButton onClick={() => setGameState(GameState.LEVEL_MAP)} variant="primary">LEVELS</GameButton>
-                <GameButton onClick={() => setGameState(GameState.HOME)} variant="danger">QUIT</GameButton>
+                <GameButton onClick={() => { playSound('click'); setGameState(GameState.PLAYING); }} variant="success">RESUME</GameButton>
+                <GameButton onClick={() => { playSound('click'); setGameState(GameState.LEVEL_MAP); }} variant="primary">LEVELS</GameButton>
+                <GameButton onClick={() => { playSound('click'); setGameState(GameState.HOME); }} variant="danger">QUIT</GameButton>
               </div>
             </div>
           </div>
@@ -426,8 +447,8 @@ const App: React.FC = () => {
           <div className="flex justify-between"><span className="font-bold">COMBO</span><span className="font-game">x{stats.maxCombo}</span></div>
         </div>
         <div className="flex flex-col gap-4 w-full max-w-xs">
-          <GameButton onClick={() => { setStats(s => ({ ...s, level: Math.max(s.level, currentLevelConfig.id + 1), stars: s.stars + 3 })); startLevel(currentLevelConfig.id + 1); }} variant="secondary">NEXT DAY ➡️</GameButton>
-          <GameButton onClick={() => setGameState(GameState.LEVEL_MAP)} variant="primary">MAP</GameButton>
+          <GameButton onClick={() => { setStats(s => ({ ...s, level: Math.max(s.level, currentLevelConfig.id + 1), stars: s.stars + 3 })); startLevel(currentLevelConfig.id + 1); }} variant="secondary" className="py-5 text-2xl">NEXT DAY ➡️</GameButton>
+          <GameButton onClick={() => { playSound('click'); setGameState(GameState.LEVEL_MAP); }} variant="primary">MAP</GameButton>
         </div>
       </div>
     );
@@ -439,8 +460,8 @@ const App: React.FC = () => {
         <span className="text-9xl mb-8 opacity-50 grayscale drop-shadow-2xl relative">🎈<span className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 grayscale-0 opacity-100">💥</span></span>
         <h2 className="text-5xl font-game mb-10 text-center">UH OH!</h2>
         <div className="flex flex-col gap-4 w-full max-w-xs">
-          <GameButton onClick={() => startLevel(currentLevelConfig.id)} variant="secondary">TRY AGAIN 🔄</GameButton>
-          <GameButton onClick={() => setGameState(GameState.HOME)} variant="danger">QUIT</GameButton>
+          <GameButton onClick={() => startLevel(currentLevelConfig.id)} variant="secondary" className="py-5 text-2xl">TRY AGAIN 🔄</GameButton>
+          <GameButton onClick={() => { playSound('click'); setGameState(GameState.HOME); }} variant="danger">QUIT</GameButton>
         </div>
       </div>
     );
@@ -451,7 +472,7 @@ const App: React.FC = () => {
       <div className="fixed inset-0 bg-gradient-to-b from-yellow-300 to-orange-500 flex flex-col items-center justify-center p-8 text-white z-[300]">
         <span className="text-[10rem] mb-12 animate-float drop-shadow-2xl">🏆</span>
         <h2 className="text-5xl font-game text-center mb-12">MATH LEGEND!</h2>
-        <GameButton onClick={() => setGameState(GameState.HOME)} variant="secondary" className="w-full max-w-xs py-6">TITLE SCREEN</GameButton>
+        <GameButton onClick={() => { playSound('click'); setGameState(GameState.HOME); }} variant="secondary" className="w-full max-w-xs py-7 text-3xl">TITLE SCREEN</GameButton>
       </div>
     );
   }
